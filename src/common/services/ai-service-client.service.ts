@@ -1,7 +1,7 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
-import * as FormData from 'form-data';
+import FormData = require('form-data');
 import * as fs from 'fs';
 
 /**
