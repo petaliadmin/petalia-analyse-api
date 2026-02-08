@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import * as compression from 'compression';
+import compression = require('compression');
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
+
+const server = express();
 
 /**
  * Bootstrap de l'application NestJS
@@ -12,7 +16,7 @@ import { AppModule } from './app.module';
  */
 async function bootstrap() {
   // Créer l'application NestJS
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
@@ -74,16 +78,27 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // Lancer le serveur
-  await app.listen(port);
+  await app.init();
 
-  console.log(`
-    🌾 AgriTech Backend is running!
-    🚀 Server: http://localhost:${port}
-    📚 API Docs: http://localhost:${port}/api/docs
-    🔧 Environment: ${configService.get('NODE_ENV')}
-    📡 API Prefix: /${apiPrefix}
-  `);
+  return app;
 }
 
-bootstrap();
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  bootstrap().then(async (app) => {
+    const configService = app.get(ConfigService);
+    const port = configService.get<number>('PORT', 3000);
+    await app.listen(port);
+
+    console.log(`
+    AgriTech Backend is running!
+    Server: http://localhost:${port}
+    API Docs: http://localhost:${port}/api/docs
+    Environment: ${configService.get('NODE_ENV')}
+    API Prefix: /${configService.get<string>('API_PREFIX', 'api/v1')}
+  `);
+  });
+}
+
+// For Vercel serverless
+export default bootstrap().then(() => server);

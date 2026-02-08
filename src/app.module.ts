@@ -55,7 +55,7 @@ import { AssistantModule } from './assistant/assistant.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         storage: diskStorage({
-          destination: configService.get<string>('UPLOAD_DESTINATION', './uploads'),
+          destination: configService.get<string>('UPLOAD_DESTINATION', '/tmp/uploads'),
           filename: (req, file, callback) => {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
             const ext = extname(file.originalname);
