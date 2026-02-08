@@ -46,5 +46,4 @@ export class User extends Document {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 // Index pour la recherche rapide
-UserSchema.index({ phone: 1 });
 UserSchema.index({ region: 1 });
